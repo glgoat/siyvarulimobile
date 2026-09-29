@@ -9,11 +9,13 @@ import { supabase } from '@/lib/supabase';
 import { AppText } from '@/components/AppText';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
+import { useTheme } from '@/providers/ThemeProvider';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function AuthScreen() {
   const router = useRouter();
+  const { palette } = useTheme();
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
