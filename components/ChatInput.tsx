@@ -1,0 +1,6 @@
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing } from '@/constants/theme';
+
+export function ChatInput({ value, onChangeText, onSend, disabled }: { value: string; onChangeText: (value: string) => void; onSend: () => void; disabled?: boolean }) { return <View style={styles.row}><TextInput value={value} onChangeText={onChangeText} placeholder="დაწერე შეტყობინება..." placeholderTextColor={colors.muted} style={styles.input} multiline maxLength={1000} /><Pressable disabled={disabled} onPress={onSend} style={[styles.send, disabled && { opacity: 0.45 }]}><Ionicons name="arrow-up" color={colors.white} size={21} /></Pressable></View>; }
+const styles = StyleSheet.create({ row: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, padding: spacing.sm, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.paper }, input: { flex: 1, maxHeight: 110, minHeight: 44, paddingHorizontal: 15, paddingVertical: 11, borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, color: colors.ink, fontSize: 15 }, send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.rose, alignItems: 'center', justifyContent: 'center' } });
