@@ -11,6 +11,7 @@ const translations: Record<string, string> = {
   'სერიოზული ურთიერთობა': 'Serious relationship', 'მსუბუქი ურთიერთობა': 'Casual relationship', 'მეგობრობა': 'Friendship', 'ჯერ არ ვიცი': 'Not sure', 'პაროლის შენახვა': 'Save password', 'ახალი პაროლი': 'New password', 'გაიმეორე პაროლი': 'Repeat password',
   'კარგია, რომ დაბრუნდი.': 'Welcome back.', 'შენი ადამიანი აქ გელოდება.': 'Your person is waiting.', 'შედი შენს პროფილზე და განაგრძე გაცნობა.': 'Sign in and continue meeting people.', 'შექმენი პროფილი და გაიცანი ადამიანები საქართველოში.': 'Create a profile and meet people in Georgia.', 'სახელი': 'Name', 'ელფოსტა': 'Email', 'პაროლი': 'Password', 'შესვლა': 'Sign in', 'რეგისტრაცია': 'Create account', 'ან': 'or', 'Google-ით გაგრძელება': 'Continue with Google', 'დაგავიწყდა პაროლი?': 'Forgot password?', 'ახალი ხარ? შექმენი ანგარიში': 'New here? Create an account', 'უკვე გაქვს ანგარიში? შედი': 'Already have an account? Sign in',
   'ჩემი პროფილი': 'My profile', 'საქმიანობა': 'Occupation', 'განათლება': 'Education', 'სიმაღლე (სმ)': 'Height (cm)', 'შენს შესახებ': 'About you', 'ფოტოების არჩევა': 'Choose photos', 'მოთხოვნის გაგზავნა': 'Submit request', 'სელფის გადაღება': 'Take selfie', 'ფოტოს არჩევა გალერეიდან': 'Choose from gallery', 'დამატებითი ინფორმაცია': 'Additional information', 'იპოვე შენი ადამიანი': 'Find your person', 'მარჯვნივ მოწონება · მარცხნივ გამოტოვება': 'Swipe right to like · left to skip', 'მოწონებები': 'Likes', 'მატჩები': 'Matches', 'ურთიერთმოწონებები, რომლებსაც გაგრძელება შეუძლია.': 'Mutual likes that can become something more.', 'დაიწყე საუბარი': 'Start a conversation', 'საუბრები ჯერ არ გაქვს': 'No conversations yet', 'მატჩის შემდეგ აქ შეძლებ საუბრის დაწყებას.': 'You can start chatting here after a match.', 'ხელახლა ცდა': 'Try again', 'ახალი პროფილები მალე გამოჩნდება': 'New profiles will appear soon', 'შეცვალე ფილტრები ან მოგვიანებით დაბრუნდი.': 'Change your filters or come back later.',
+  'პროფილის შექმნა': 'Create profile', 'მოგვიყევი შენზე': 'Tell us about yourself', 'დაამატე ფოტოები': 'Add photos', 'აირჩიე ინტერესები': 'Choose interests', 'გაგრძელება': 'Continue', 'დასრულება': 'Finish', 'უკან': 'Back', 'ფოტოები': 'Photos', 'პროფილის ვერიფიკაცია': 'Profile verification', 'პროფილი ვერიფიცირებულია': 'Profile verified', 'მოთხოვნა განხილვაშია': 'Request under review', 'მოთხოვნა უარყოფილია': 'Request rejected', 'დაამატე სელფი, რომ დაადასტურო შენი პროფილი.': 'Add a selfie to verify your profile.', 'ფილტრები': 'Filters', 'მდებარეობა': 'Location', 'მოწონება': 'Like', 'გამოტოვება': 'Skip', '通知': 'Notifications', 'საიტზე დაბრუნება': 'Return to site', 'რაღაც შეფერხდა': 'Something went wrong',
 };
 
 const LanguageContext = createContext<{ language: Language; setLanguage: (language: Language) => void }>({
@@ -41,5 +42,10 @@ export function useLanguage() {
 }
 
 export function translateText(text: string, language: Language) {
-  return language === 'en' ? translations[text] || text : text;
+  if (language !== 'en') return text;
+  if (translations[text]) return translations[text];
+  if (text.startsWith('საქმიანობა: ')) return `Occupation: ${text.slice('საქმიანობა: '.length)}`;
+  if (text.startsWith('განათლება: ')) return `Education: ${text.slice('განათლება: '.length)}`;
+  if (text.startsWith('სიმაღლე: ')) return `Height: ${text.slice('სიმაღლე: '.length)}`;
+  return text;
 }
