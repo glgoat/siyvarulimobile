@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { calculateAge } from '@/lib/helpers';
 import { CITY_COORDINATES, distanceKm, getNearestCity } from '@/constants/geography';
 import { useAuth } from '@/providers/AuthProvider';
+import { useTheme } from '@/providers/ThemeProvider';
 import type { DiscoveryProfile, Photo, Profile } from '@/types';
 import { AppText } from '@/components/AppText';
 import { EmptyState, ErrorState, LoadingState, Screen } from '@/components/Screen';
@@ -16,6 +17,7 @@ import { SwipeDeck } from '@/components/SwipeDeck';
 export default function DiscoverScreen() {
   const router = useRouter();
   const { user, settings, profile: currentProfile } = useAuth();
+  const { palette } = useTheme();
   const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -35,6 +37,12 @@ export default function DiscoverScreen() {
     })().catch(() => undefined);
     return () => { active = false; };
   }, [user]);
+  async function detectLocation() {
+    if (!user) return;
+    const permission = await Location.requestForegroundPermissionsAsync();
+    if (!permission.granted) return Alert.alert('მდებარეობაზე წვდომა საჭიროა', 'ჩართე Location წვდომა iPhone-ის Settings-ში.');
+    try { const result = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }); const next = { lat: result.coords.latitude, lng: result.coords.longitude }; setDeviceLocation(next); const nearestCity = getNearestCity(next.lat, next.lng); await supabase.from('profiles').update({ latitude: next.lat, longitude: next.lng, ...(nearestCity ? { city: nearestCity } : {}) }).eq('id', user.id); await load(); } catch { Alert.alert('მდებარეობა ვერ განისაზღვრა', 'სცადე თავიდან.'); }
+  }
   const load = useCallback(async () => {
     if (!user || !currentProfile) return;
     setLoading(true); setError('');
@@ -83,6 +91,6 @@ export default function DiscoverScreen() {
   }
   if (loading) return <LoadingState />;
   if (error) return <Screen scroll={false}><ErrorState message={error} /><Pressable onPress={load}><AppText style={styles.retry}>ხელახლა ცდა</AppText></Pressable></Screen>;
-  return <Screen scroll={false}><View style={styles.header}><View><AppText style={styles.eyebrow}>siyvaruli.ge</AppText><AppText style={styles.title}>იპოვე შენი ადამიანი</AppText></View><Pressable onPress={() => router.push('/settings')}><Ionicons name="options-outline" size={25} color={colors.ink} /></Pressable></View>{profiles.length ? <><SwipeDeck profiles={profiles} onSwipe={swipe} onOpen={(profile) => router.push({ pathname: '/profile/[id]', params: { id: profile.id } })} /><View style={styles.actions}><Pressable disabled={!lastSwipe} onPress={() => void undo()} style={[styles.action, !lastSwipe && styles.disabled]}><Ionicons name="arrow-undo" size={24} color="#c69214" /></Pressable><Pressable onPress={() => void swipe(profiles[0], false)} style={styles.action}><Ionicons name="close" size={31} color={colors.muted} /></Pressable><Pressable onPress={() => void swipe(profiles[0], true)} style={[styles.action, styles.like]}><Ionicons name="heart" size={29} color={colors.white} /></Pressable></View><AppText style={styles.hint}>მარჯვნივ მოწონება · მარცხნივ გამოტოვება</AppText></> : <EmptyState title="ახალი პროფილები მალე გამოჩნდება" body="შეცვალე ფილტრები ან მოგვიანებით დაბრუნდი." />}</Screen>;
+  return <Screen scroll={false}><View style={styles.header}><View><AppText style={styles.eyebrow}>siyvaruli.ge</AppText><AppText style={styles.title}>იპოვე შენი ადამიანი</AppText></View><View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}><Pressable onPress={() => void detectLocation()}><Ionicons name="navigate-outline" size={23} color={palette.rose} /></Pressable><Pressable onPress={() => router.push('/settings')}><Ionicons name="options-outline" size={25} color={palette.ink} /></Pressable></View></View>{profiles.length ? <><SwipeDeck profiles={profiles} onSwipe={swipe} onOpen={(profile) => router.push({ pathname: '/profile/[id]', params: { id: profile.id } })} /><View style={styles.actions}><Pressable disabled={!lastSwipe} onPress={() => void undo()} style={[styles.action, { backgroundColor: palette.surface, borderColor: palette.line }, !lastSwipe && styles.disabled]}><Ionicons name="arrow-undo" size={24} color="#c69214" /></Pressable><Pressable onPress={() => void swipe(profiles[0], false)} style={[styles.action, { backgroundColor: palette.surface, borderColor: palette.line }]}><Ionicons name="close" size={31} color={palette.muted} /></Pressable><Pressable onPress={() => void swipe(profiles[0], true)} style={[styles.action, styles.like]}><Ionicons name="heart" size={29} color={palette.white} /></Pressable></View><AppText style={styles.hint}>მარჯვნივ მოწონება · მარცხნივ გამოტოვება</AppText></> : <EmptyState title="ახალი პროფილები მალე გამოჩნდება" body="შეცვალე ფილტრები ან მოგვიანებით დაბრუნდი." />}</Screen>;
 }
 const styles = StyleSheet.create({ header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg }, eyebrow: { color: colors.rose, fontWeight: '800', fontSize: 14 }, title: { fontSize: 26, fontWeight: '800', marginTop: 3 }, actions: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 14, marginTop: 20 }, action: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, elevation: 3 }, disabled: { opacity: 0.4 }, like: { backgroundColor: colors.rose, borderColor: colors.rose }, hint: { color: colors.muted, fontSize: 12, textAlign: 'center', marginTop: 12 }, retry: { color: colors.rose, textAlign: 'center', fontWeight: '700' } });
