@@ -26,6 +26,8 @@
     },
     "plugins": [
       "expo-router",
+      ["expo-location", { "locationWhenInUsePermission": "siyvaruli.ge-სთვის შენი ქალაქის ავტომატურად დასადგენად საჭიროა მდებარეობა." }],
+      ["expo-camera", { "cameraPermission": "სელფის ვერიფიკაციისთვის საჭიროა კამერაზე წვდომა." }],
       [
         "expo-splash-screen",
         {

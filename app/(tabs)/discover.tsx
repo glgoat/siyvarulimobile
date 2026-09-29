@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { calculateAge } from '@/lib/helpers';
+import { CITY_COORDINATES, distanceKm, getNearestCity } from '@/constants/geography';
 import { useAuth } from '@/providers/AuthProvider';
 import type { DiscoveryProfile, Photo, Profile } from '@/types';
 import { AppText } from '@/components/AppText';
@@ -18,6 +20,21 @@ export default function DiscoverScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lastSwipe, setLastSwipe] = useState<{ profile: DiscoveryProfile; liked: boolean } | null>(null);
+  const [deviceLocation, setDeviceLocation] = useState<{ lat: number; lng: number } | null>(null);
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const permission = await Location.requestForegroundPermissionsAsync();
+      if (!permission.granted || !active || !user) return;
+      const result = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      if (!active) return;
+      const next = { lat: result.coords.latitude, lng: result.coords.longitude };
+      setDeviceLocation(next);
+      const nearestCity = getNearestCity(next.lat, next.lng);
+      await supabase.from('profiles').update({ latitude: next.lat, longitude: next.lng, ...(nearestCity ? { city: nearestCity } : {}) }).eq('id', user.id);
+    })().catch(() => undefined);
+    return () => { active = false; };
+  }, [user]);
   const load = useCallback(async () => {
     if (!user || !currentProfile) return;
     setLoading(true); setError('');
@@ -38,9 +55,10 @@ export default function DiscoverScreen() {
     });
     const ids = visible.map((profile) => profile.id);
     const { data: photos } = ids.length ? await supabase.from('photos').select('*').in('user_id', ids).order('position') : { data: [] as Photo[] };
-    setProfiles(visible.map((profile) => ({ ...profile, age: calculateAge(profile.date_of_birth), photos: (photos || []).filter((photo) => photo.user_id === profile.id) })));
+    const origin = deviceLocation || (currentProfile.latitude && currentProfile.longitude ? { lat: currentProfile.latitude, lng: currentProfile.longitude } : currentProfile.city ? CITY_COORDINATES[currentProfile.city] : null);
+    setProfiles(visible.map((candidate) => ({ ...candidate, age: calculateAge(candidate.date_of_birth), distance: origin && candidate.latitude && candidate.longitude ? distanceKm(origin, { lat: candidate.latitude, lng: candidate.longitude }) : candidate.city && origin && CITY_COORDINATES[candidate.city] ? distanceKm(origin, CITY_COORDINATES[candidate.city]) : null, photos: (photos || []).filter((photo) => photo.user_id === candidate.id) })));
     setLoading(false);
-  }, [user, settings, currentProfile]);
+  }, [user, settings, currentProfile, deviceLocation]);
   useEffect(() => { void load(); }, [load]);
   async function swipe(profile: DiscoveryProfile, liked: boolean) {
     if (!user) return;
