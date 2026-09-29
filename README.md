@@ -17,3 +17,9 @@ The app uses the existing profiles, photos, likes, passes, matches, messages, us
 The web app at https://github.com/glgoat/siyvaruli-ge is not modified by this project.
 
 The mobile client rejects localhost and placeholder Supabase hosts so a device never silently tries to authenticate against a non-routable development URL.
+
+## Google sign-in
+
+The app starts Google OAuth through the same Supabase project as the website and exchanges the PKCE code on-device. Enable Google under Supabase Authentication > Providers, then add `siyvaruli://auth/callback` to Authentication > URL Configuration > Redirect URLs. The Google Cloud OAuth client should use the Supabase callback URL shown in the provider settings, usually `https://<project-ref>.supabase.co/auth/v1/callback`.
+
+After changing OAuth settings, restart Expo with `npx expo start --tunnel --clear --go` so the device receives the current bundle.
