@@ -2,10 +2,12 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleShe
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing } from '@/constants/theme';
 import { AppText } from './AppText';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export function Screen({ children, scroll = true, ...props }: { children: React.ReactNode; scroll?: boolean } & ViewProps) {
+  const { palette } = useTheme();
   const body = scroll ? <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>{children}</ScrollView> : children;
-  return <SafeAreaView style={styles.safe}><KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}><View {...props} style={[styles.flex, props.style]}>{body}</View></KeyboardAvoidingView></SafeAreaView>;
+  return <SafeAreaView style={[styles.safe, { backgroundColor: palette.paper }]}><KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}><View {...props} style={[styles.flex, { backgroundColor: palette.paper }, props.style]}>{body}</View></KeyboardAvoidingView></SafeAreaView>;
 }
 export function LoadingState() { return <View style={styles.center}><ActivityIndicator color={colors.rose} size="large" /></View>; }
 export function EmptyState({ title, body }: { title: string; body: string }) { return <View style={styles.empty}><AppText style={styles.emptyTitle}>{title}</AppText><AppText style={styles.emptyBody}>{body}</AppText></View>; }
