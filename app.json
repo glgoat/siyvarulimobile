@@ -26,14 +26,33 @@
     },
     "plugins": [
       "expo-router",
-      ["expo-location", { "locationWhenInUsePermission": "siyvaruli.ge-სთვის შენი ქალაქის ავტომატურად დასადგენად საჭიროა მდებარეობა." }],
-      ["expo-camera", { "cameraPermission": "სელფის ვერიფიკაციისთვის საჭიროა კამერაზე წვდომა." }],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "siyvaruli.ge-სთვის შენი ქალაქის ავტომატურად დასადგენად საჭიროა მდებარეობა."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "სელფის ვერიფიკაციისთვის საჭიროა კამერაზე წვდომა."
+        }
+      ],
       [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511",
+          "userTrackingUsageDescription": "Siyvaruli uses this permission to support relevant advertising.",
+          "delayAppMeasurementInit": true
         }
       ]
     ],

@@ -3,10 +3,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing } from '@/constants/theme';
 import { AppText } from './AppText';
 import { useTheme } from '@/providers/ThemeProvider';
+import { usePathname } from 'expo-router';
+import { AdBanner } from './AdBanner';
 
 export function Screen({ children, scroll = true, ...props }: { children: React.ReactNode; scroll?: boolean } & ViewProps) {
   const { palette } = useTheme();
-  const body = scroll ? <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>{children}</ScrollView> : children;
+  const pathname = usePathname();
+  const showAd = ['/likes', '/matches', '/messages', '/settings'].some((route) => pathname.endsWith(route));
+  const content = <>{children}{showAd && <AdBanner />}</>;
+  const body = scroll ? <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>{content}</ScrollView> : content;
   return <SafeAreaView style={[styles.safe, { backgroundColor: palette.paper }]}><KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}><View {...props} style={[styles.flex, { backgroundColor: palette.paper }, props.style]}>{body}</View></KeyboardAvoidingView></SafeAreaView>;
 }
 export function LoadingState() { const { palette } = useTheme(); return <View style={styles.center}><ActivityIndicator color={palette.rose} size="large" /></View>; }
